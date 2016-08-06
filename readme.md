@@ -68,3 +68,5 @@ def my_transform((x0, y0, x1, y1), progress):
         x0, y1
     )
 ```
+
+[![AnimLabel Video demonstrattion](http://img.youtube.com/vi/PUD_RTmpxag/0.jpg)](http://www.youtube.com/watch?v=PUD_RTmpxag "AnimLabel Video demonstration")
