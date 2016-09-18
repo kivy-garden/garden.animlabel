@@ -130,6 +130,8 @@ class AnimLabel(Label):
     '''target text to set to animate'''
     target_text = StringProperty(u'')
 
+    transition_function = ObjectProperty(AnimationTransition.linear)
+
     '''this function will get the destination coordinates of the letter,
     and the progress for this letter, must return the current
     coordinates, for a Quad to use
@@ -145,6 +147,10 @@ class AnimLabel(Label):
 
     _cache = DictProperty({})
     _time = NumericProperty()
+
+    def on_transition_function(self, instance, value):
+        if isinstance(value, string_types):
+            self.transition_function = getattr(AnimationTransition, value)
 
     def on_transform(self, instance, value):
         if isinstance(value, string_types):
@@ -177,11 +183,15 @@ class AnimLabel(Label):
                     Quad(
                         points=[0, 0, 0, 0, 0, 0, 0, 0],
                         texture=self._cache[l].texture
-                        )
                     )
+                )
 
     def tick(self, dt):
         self._time += dt
+        return (
+            self._time < self.letter_duration +
+            len(self.target_text) * self.letter_offset
+        )
 
     def on__time(self, instance, value):
         if not self.texture:
@@ -195,8 +205,7 @@ class AnimLabel(Label):
         duration = self.letter_duration
 
         for i, l in enumerate(self.target_text):
-            a = (value - i * offset) / duration
-            a = min(1, max(0, a))
+            a = self.transition_function((value - i * offset) / duration)
             # ref can contain multiple rects, but we will always have
             # just one, assuming no letter is cut in half
             coords = list(self.refs[str(i)][0])
@@ -208,10 +217,6 @@ class AnimLabel(Label):
             points = self.transform(coords, a)
             self.quads[i].points = points
             self.quads[i].texture = self._cache[l].texture
-
-        # alhpa for the last letter is 1, we are done
-        if a == 1:
-            Clock.unschedule(self.tick)
 
     def animate(self):
         if self.target_text:
