@@ -205,6 +205,8 @@ class AnimLabel(Label):
         duration = self.letter_duration
 
         for i, l in enumerate(self.target_text):
+            if value - i * offset > duration:
+                continue
             a = self.transition_function((value - i * offset) / duration)
             # ref can contain multiple rects, but we will always have
             # just one, assuming no letter is cut in half
