@@ -173,18 +173,25 @@ class AnimLabel(Label):
                     font_size=self.font_size,
                     font_name=self.font_name)
 
+    def cleanup(self):
+        self.quads = []
+
     def on_texture(self, instance, value):
         self.canvas.clear()
-        quads = self.quads = []
         self.cache_text()
+        self.cleanup()
         with self.canvas:
             for l in self.target_text:
-                quads.append(
-                    Quad(
-                        points=[0, 0, 0, 0, 0, 0, 0, 0],
-                        texture=self._cache[l].texture
-                    )
-                )
+                self.create_letter(l)
+
+    def create_letter(self, letter):
+        quads = self.quads
+        quads.append(
+            Quad(
+                points=[0, 0, 0, 0, 0, 0, 0, 0],
+                texture=self._cache[letter].texture
+            )
+        )
 
     def tick(self, dt):
         self._time += dt
@@ -205,20 +212,28 @@ class AnimLabel(Label):
         duration = self.letter_duration
 
         for i, l in enumerate(self.target_text):
-            if value - i * offset > duration:
+            if not 0 < value - i * offset < duration:
                 continue
-            a = self.transition_function((value - i * offset) / duration)
-            # ref can contain multiple rects, but we will always have
-            # just one, assuming no letter is cut in half
-            coords = list(self.refs[str(i)][0])
-            coords[0] += self.center_x - self.texture_size[0] / 2
-            coords[1] += self.center_y - self.texture_size[1] / 2
-            coords[2] += self.center_x - self.texture_size[0] / 2
-            coords[3] += self.center_y - self.texture_size[1] / 2
+            self.update_letter(value, i, l)
 
-            points = self.transform(coords, a)
-            self.quads[i].points = points
-            self.quads[i].texture = self._cache[l].texture
+    def update_letter(self, time, index, letter):
+        offset = self.letter_offset
+        duration = self.letter_duration
+        value = time
+        i = index
+        l = letter
+        a = self.transition_function((value - i * offset) / duration)
+        # ref can contain multiple rects, but we will always have
+        # just one, assuming no letter is cut in half
+        coords = list(self.refs[str(i)][0])
+        coords[0] += self.center_x - self.texture_size[0] / 2
+        coords[1] += self.center_y - self.texture_size[1] / 2
+        coords[2] += self.center_x - self.texture_size[0] / 2
+        coords[3] += self.center_y - self.texture_size[1] / 2
+
+        points = self.transform(coords, a)
+        self.quads[i].points = points
+        self.quads[i].texture = self._cache[l].texture
 
     def animate(self):
         if self.target_text:
