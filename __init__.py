@@ -45,10 +45,10 @@ class Transformations(object):
         h = (y1 - y0) * x  # tend to correct height, from 0
         w = (x1 - x0) * (2 - x)
         return (
-            x0 + w * (1 - alpha*alpha), y0,
-            x0 + w * (1 - alpha*alpha) + w, y0,
-            x0 + w * (1 - alpha*alpha) + w, y0 + h,
-            x0 + w * (1 - alpha*alpha), y0 + h,
+            x0 + w * (1 - alpha * alpha), y0,
+            x0 + w * (1 - alpha * alpha) + w, y0,
+            x0 + w * (1 - alpha * alpha) + w, y0 + h,
+            x0 + w * (1 - alpha * alpha), y0 + h,
         )
 
     @staticmethod
@@ -299,6 +299,12 @@ BoxLayout:
         on_text:
             f = app.font_paths.get(self.text)
             if f: target.font_name = f
+
+    Button:
+        text: 'play'
+        on_press: target.animate()
+        size_hint_y: None
+        height: '48dp'
 
     GridLayout:
         cols: 3
