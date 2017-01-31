@@ -2,7 +2,7 @@ from kivy.uix.label import Label
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.properties import NumericProperty, DictProperty,\
-    StringProperty, ObjectProperty, ListProperty
+    StringProperty, ObjectProperty, ListProperty, AliasProperty
 from kivy.clock import Clock
 from kivy.graphics.vertex_instructions import Quad
 from kivy.animation import AnimationTransition
@@ -147,6 +147,21 @@ class AnimLabel(Label):
 
     _cache = DictProperty({})
     _time = NumericProperty()
+
+    def _get_progress(self):
+        duration = (
+            self.letter_offset * len(self.target_text) +
+            self.letter_duration
+        )
+        if not duration:
+            return 0
+
+        return self._time / duration
+
+    progress = AliasProperty(
+        _get_progress,
+        bind=['_time', 'target_text', 'letter_duration', 'letter_offset']
+    )
 
     def on_transition_function(self, instance, value):
         if isinstance(value, string_types):
